@@ -7,6 +7,12 @@ interface IListItem {
     isSelected: boolean;
 }
 
+interface ITarefa {
+    id: number;
+    title: string;
+    isCompleted: boolean;
+}
+
 export const Dashboard = () => {
 
     //utilizando hook useRef para armazenar objeto
@@ -16,6 +22,8 @@ export const Dashboard = () => {
     const {nomeDoUsuario, logout} = useUsuarioLogado();
 
     const [listaObjeto, setlistaObjeto] = useState<IListItem[]>([]);
+
+    const [listaObjetoJson, setlistaObjetoJson] = useState<ITarefa[]>([]);
 
     const [lista, setLista]  = useState<string []>(['Teste1', 'Teste2', 'Teste3']);
 
@@ -57,6 +65,32 @@ export const Dashboard = () => {
                     {
                         title: value,
                         isSelected: false,
+                    }
+                ];
+            });
+        }
+    }, []);
+
+    const handleInputKeyDownJson: React.KeyboardEventHandler<HTMLInputElement> = useCallback((e) => {
+        if (e.key === 'Enter') {
+
+            //trim() é utilizado para remover espaços
+            if (e.currentTarget.value.trim().length === 0) return;
+
+            const value = e.currentTarget.value;
+
+            e.currentTarget.value = '';
+
+            setlistaObjetoJson((oldLista) => {
+                //abaixo validacao para se valor já existir não é inserido novamente
+                if (oldLista.some((listItem) => listItem.title === value)) return oldLista;
+                // [...]->spading cria uma nova lista mas utiliza todos os valores que já existem
+                return [
+                    ...oldLista,
+                    {
+                        title: value,
+                        isCompleted: false,
+                        id: oldLista.length,
                     }
                 ];
             });
@@ -106,6 +140,35 @@ export const Dashboard = () => {
                                         return {
                                             ...oldlistItem,
                                             isSelected: newIsSelected,
+                                        };
+                                    });
+                                });
+                            }} 
+                        />
+                        {listItem.title}
+                    </li>;
+                })}
+            </ul>
+
+            <input type="text" onKeyDown={handleInputKeyDownJson} />
+            <p>Lista de Objeto</p>
+
+            <p>{listaObjetoJson.filter((listaObjeto) => listaObjeto.isCompleted).length}</p>
+            <ul>
+                {listaObjetoJson.map((listItem) => {
+                    return <li key={listItem.id}>
+                        <input 
+                            type="checkbox"
+                            checked={listItem.isCompleted}
+                            onChange={() => {
+                                setlistaObjetoJson(oldLista => {
+                                    return oldLista.map(oldlistItem => {
+                                        const newIsCompleted = oldlistItem.title === listItem.title
+                                            ? !oldlistItem.isCompleted
+                                            : oldlistItem.isCompleted;
+                                        return {
+                                            ...oldlistItem,
+                                            isCompleted: newIsCompleted,
                                         };
                                     });
                                 });
